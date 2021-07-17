@@ -1,2 +1,2 @@
 # DeformTools
-Mesh/Terrain deformation tools for Unity3d.
+Mesh/Terrain deformation tools for OpenConstructionSim.
