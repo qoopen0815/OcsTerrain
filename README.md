@@ -1,2 +1,2 @@
-# OCS_Terrain
-Terrain tools for OpenConstructionSim.
+# DeformTools
+Mesh/Terrain deformation tools for Unity3d.
