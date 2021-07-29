@@ -6,12 +6,12 @@ public class ExcavateLine : MonoBehaviour
 {
     [SerializeField] private GameObject _bucketObj;
     [SerializeField] private float _lineWidth;
-    [SerializeField] private bool _isExcavateLineVisible;
 
     private Rigidbody _rigidbody;
     private CapsuleCollider _collider;
-    private LineRenderer _lineRenderer;
     private TerrainManager _terrainManager;
+
+    private GameObject[] _tips;
     private Vector3[] _lineEnd;
     private bool _isDeformable;
 
@@ -25,14 +25,12 @@ public class ExcavateLine : MonoBehaviour
     {
         this.gameObject.AddComponent<Rigidbody>();
         this.gameObject.AddComponent<CapsuleCollider>();
-        if (this._isExcavateLineVisible) this.gameObject.AddComponent<LineRenderer>();
 
 #if UNITY_EDITOR
         // Tag setting
         this._tagHelper.AddTag(this._bucketTagName);
 #endif
         this.gameObject.tag = this._bucketTagName;
-
         this._bucketObj.tag = this._bucketTagName;
         Transform children = this._bucketObj.GetComponentInChildren<Transform>();
         if (children.childCount != 0)
@@ -55,33 +53,27 @@ public class ExcavateLine : MonoBehaviour
         this._collider.radius = 0.01f;
         this._collider.direction = 2;   // Z-axis
 
-        if (this._isExcavateLineVisible)
-        {
-            this._lineRenderer = this.gameObject.GetComponent<LineRenderer>();
-            this._lineRenderer.startWidth = 0.05f;
-        }
-
         this._terrainManager = GameObject.FindGameObjectWithTag(this._terrainTagName).GetComponent<TerrainManager>();
         this._isDeformable = false;
+
+        this._tips = new GameObject[2] { new GameObject("tip1"), new GameObject("tip2") };
+        this._tips[0].transform.parent = this.transform;
+        this._tips[0].transform.localPosition = new Vector3(0, 0, -this._lineWidth / 2);
+        this._tips[1].transform.parent = this.transform;
+        this._tips[1].transform.localPosition = new Vector3(0, 0, this._lineWidth / 2);
     }
 
     // Update is called once per frame
     void Update()
     {
-        this._lineEnd = new Vector3[] { new Vector3(0, 0, -this._lineWidth / 2), new Vector3(0, 0, this._lineWidth / 2) };
-        if (this._isExcavateLineVisible)
-        {
-            this._lineRenderer.SetPositions(new Vector3[] { this.transform.position + this._lineEnd[0], this.transform.position + this._lineEnd[1] });
-        }
         if (this._isDeformable)
         {
-            Vector3[] targets = this.GetExcavateArea(this.transform.position + this._lineEnd[0], this.transform.position + this._lineEnd[1]);
+            Vector3[] targets = this.GetExcavateArea(this._tips[0].transform.position, this._tips[1].transform.position);
             this._terrainManager.ExcavateWithSand(targets);
         }
 
-        Vector3[] line = new Vector3[] { this.transform.position + this._lineEnd[0], this.transform.position + this._lineEnd[1] };
-        if (line[0].y - 0.1f > this._terrainManager.FromTerrainPositionY(this._terrainManager.GetHeightmap(line[0])) &&
-            line[1].y - 0.1f > this._terrainManager.FromTerrainPositionY(this._terrainManager.GetHeightmap(line[1])))
+        if (this._tips[0].transform.position.y - 0.1f > this._terrainManager.FromTerrainPositionY(this._terrainManager.GetHeightmap(this._tips[0].transform.position)) &&
+            this._tips[1].transform.position.y - 0.1f > this._terrainManager.FromTerrainPositionY(this._terrainManager.GetHeightmap(this._tips[1].transform.position)))
         {
             this._isDeformable = false;
         }
